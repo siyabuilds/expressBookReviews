@@ -58,20 +58,20 @@ public_users.get("/author/:author", function (req, res) {
 public_users.get("/title/:title", function (req, res) {
   // Get the title from request parameters
   const title = req.params.title;
-  
+
   // Get all the keys for the 'books' object
   const bookKeys = Object.keys(books);
-  
+
   // Array to store matching books
   let matchingBooks = [];
-  
+
   // Iterate through the 'books' array & check if title matches
-  bookKeys.forEach(key => {
+  bookKeys.forEach((key) => {
     if (books[key].title.toLowerCase() === title.toLowerCase()) {
       matchingBooks.push(books[key]);
     }
   });
-  
+
   // Check if any books were found
   if (matchingBooks.length > 0) {
     res.send(JSON.stringify(matchingBooks, null, 4));
@@ -82,8 +82,17 @@ public_users.get("/title/:title", function (req, res) {
 
 //  Get book review
 public_users.get("/review/:isbn", function (req, res) {
-  //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+  // Get the ISBN from request parameters
+  const isbn = req.params.isbn;
+
+  // Check if the book exists
+  if (books[isbn]) {
+    // Get the book reviews based on ISBN
+    const bookReviews = books[isbn].reviews;
+    res.send(JSON.stringify(bookReviews, null, 4));
+  } else {
+    return res.status(404).json({ message: "Book not found" });
+  }
 });
 
 module.exports.general = public_users;
