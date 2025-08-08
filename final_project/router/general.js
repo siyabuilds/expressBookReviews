@@ -1,4 +1,5 @@
 const express = require("express");
+const axios = require("axios");
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
@@ -40,6 +41,102 @@ public_users.get("/isbn/:isbn", function (req, res) {
     res.send(JSON.stringify(books[isbn], null, 4));
   } else {
     return res.status(404).json({ message: "Book not found" });
+  }
+});
+
+// Task 11 - Get book details by ISBN using Promise callbacks
+public_users.get("/isbn-promise/:isbn", function (req, res) {
+  const isbn = req.params.isbn;
+  
+  // Create a Promise to fetch book details by ISBN
+  const getBookByISBNPromise = new Promise((resolve, reject) => {
+    // Simulate async operation
+    setTimeout(() => {
+      if (books[isbn]) {
+        resolve(books[isbn]);
+      } else {
+        reject(new Error("Book not found"));
+      }
+    }, 100);
+  });
+
+  // Using Promise callbacks (.then() and .catch())
+  getBookByISBNPromise
+    .then((bookData) => {
+      res.send(JSON.stringify(bookData, null, 4));
+    })
+    .catch((error) => {
+      res.status(404).json({ message: error.message });
+    });
+});
+
+// Task 11 - Get book details by ISBN using async-await
+public_users.get("/isbn-async/:isbn", async function (req, res) {
+  const isbn = req.params.isbn;
+  
+  try {
+    // Function that returns a Promise
+    const getBookByISBNAsync = (isbn) => {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (books[isbn]) {
+            resolve(books[isbn]);
+          } else {
+            reject(new Error("Book not found"));
+          }
+        }, 100);
+      });
+    };
+
+    // Using async-await
+    const bookData = await getBookByISBNAsync(isbn);
+    res.send(JSON.stringify(bookData, null, 4));
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+});
+
+// Task 11 - Get book details by ISBN using axios with Promise callbacks
+public_users.get("/isbn-axios-promise/:isbn", function (req, res) {
+  const isbn = req.params.isbn;
+  const url = `http://localhost:${process.env.PORT || 5000}/isbn/${isbn}`;
+  
+  // Using axios with Promise callbacks
+  axios.get(url)
+    .then((response) => {
+      res.send(JSON.stringify(response.data, null, 4));
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 404) {
+        res.status(404).json({ message: "Book not found" });
+      } else {
+        res.status(500).json({ 
+          message: "Error fetching book details via axios", 
+          error: error.message 
+        });
+      }
+    });
+});
+
+// Task 11 - Get book details by ISBN using axios with async-await
+public_users.get("/isbn-axios-async/:isbn", async function (req, res) {
+  const isbn = req.params.isbn;
+  
+  try {
+    const url = `http://localhost:${process.env.PORT || 5000}/isbn/${isbn}`;
+    
+    // Using axios with async-await
+    const response = await axios.get(url);
+    res.send(JSON.stringify(response.data, null, 4));
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      res.status(404).json({ message: "Book not found" });
+    } else {
+      res.status(500).json({ 
+        message: "Error fetching book details via axios", 
+        error: error.message 
+      });
+    }
   }
 });
 
@@ -107,6 +204,88 @@ public_users.get("/review/:isbn", function (req, res) {
     res.send(JSON.stringify(bookReviews, null, 4));
   } else {
     return res.status(404).json({ message: "Book not found" });
+  }
+});
+
+// Task 10 - Get all books using Promise callbacks
+public_users.get("/books-promise", function (req, res) {
+  // Simulate fetching books using a Promise
+  const getBooksPromise = new Promise((resolve, reject) => {
+    // Simulate async operation
+    setTimeout(() => {
+      if (books) {
+        resolve(books);
+      } else {
+        reject(new Error("Unable to fetch books"));
+      }
+    }, 100);
+  });
+
+  // Using Promise callbacks (.then() and .catch())
+  getBooksPromise
+    .then((booksData) => {
+      res.send(JSON.stringify(booksData, null, 4));
+    })
+    .catch((error) => {
+      res.status(500).json({ message: "Error fetching books", error: error.message });
+    });
+});
+
+// Task 10 - Get all books using async-await
+public_users.get("/books-async", async function (req, res) {
+  try {
+    // Function that returns a Promise
+    const getBooksAsync = () => {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (books) {
+            resolve(books);
+          } else {
+            reject(new Error("Unable to fetch books"));
+          }
+        }, 100);
+      });
+    };
+
+    // Using async-await
+    const booksData = await getBooksAsync();
+    res.send(JSON.stringify(booksData, null, 4));
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching books", error: error.message });
+  }
+});
+
+// Task 10 - Get all books using axios with Promise callbacks
+public_users.get("/books-axios-promise", function (req, res) {
+  // Simulate external API call with axios (using localhost as example)
+  const url = `http://localhost:${process.env.PORT || 5000}/`;
+  
+  // Using axios with Promise callbacks
+  axios.get(url)
+    .then((response) => {
+      res.send(JSON.stringify(response.data, null, 4));
+    })
+    .catch((error) => {
+      res.status(500).json({ 
+        message: "Error fetching books via axios", 
+        error: error.message 
+      });
+    });
+});
+
+// Task 10 - Get all books using axios with async-await
+public_users.get("/books-axios-async", async function (req, res) {
+  try {
+    const url = `http://localhost:${process.env.PORT || 5000}/`;
+    
+    // Using axios with async-await
+    const response = await axios.get(url);
+    res.send(JSON.stringify(response.data, null, 4));
+  } catch (error) {
+    res.status(500).json({ 
+      message: "Error fetching books via axios", 
+      error: error.message 
+    });
   }
 });
 
