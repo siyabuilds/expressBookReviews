@@ -308,6 +308,122 @@ public_users.get("/title/:title", function (req, res) {
   }
 });
 
+// Task 13 - Get book details by Title using Promise callbacks
+public_users.get("/title-promise/:title", function (req, res) {
+  const title = req.params.title;
+  
+  // Create a Promise to fetch books by title
+  const getBooksByTitlePromise = new Promise((resolve, reject) => {
+    // Simulate async operation
+    setTimeout(() => {
+      const bookKeys = Object.keys(books);
+      let matchingBooks = [];
+
+      // Find books by the specified title
+      bookKeys.forEach((key) => {
+        if (books[key].title.toLowerCase() === title.toLowerCase()) {
+          matchingBooks.push(books[key]);
+        }
+      });
+
+      if (matchingBooks.length > 0) {
+        resolve(matchingBooks);
+      } else {
+        reject(new Error("No books found with this title"));
+      }
+    }, 100);
+  });
+
+  // Using Promise callbacks (.then() and .catch())
+  getBooksByTitlePromise
+    .then((booksData) => {
+      res.send(JSON.stringify(booksData, null, 4));
+    })
+    .catch((error) => {
+      res.status(404).json({ message: error.message });
+    });
+});
+
+// Task 13 - Get book details by Title using async-await
+public_users.get("/title-async/:title", async function (req, res) {
+  const title = req.params.title;
+  
+  try {
+    // Function that returns a Promise
+    const getBooksByTitleAsync = (title) => {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          const bookKeys = Object.keys(books);
+          let matchingBooks = [];
+
+          // Find books by the specified title
+          bookKeys.forEach((key) => {
+            if (books[key].title.toLowerCase() === title.toLowerCase()) {
+              matchingBooks.push(books[key]);
+            }
+          });
+
+          if (matchingBooks.length > 0) {
+            resolve(matchingBooks);
+          } else {
+            reject(new Error("No books found with this title"));
+          }
+        }, 100);
+      });
+    };
+
+    // Using async-await
+    const booksData = await getBooksByTitleAsync(title);
+    res.send(JSON.stringify(booksData, null, 4));
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+});
+
+// Task 13 - Get book details by Title using axios with Promise callbacks
+public_users.get("/title-axios-promise/:title", function (req, res) {
+  const title = req.params.title;
+  const url = `http://localhost:${process.env.PORT || 5000}/title/${title}`;
+  
+  // Using axios with Promise callbacks
+  axios.get(url)
+    .then((response) => {
+      res.send(JSON.stringify(response.data, null, 4));
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 404) {
+        res.status(404).json({ message: "No books found with this title" });
+      } else {
+        res.status(500).json({ 
+          message: "Error fetching books by title via axios", 
+          error: error.message 
+        });
+      }
+    });
+});
+
+// Task 13 - Get book details by Title using axios with async-await
+public_users.get("/title-axios-async/:title", async function (req, res) {
+  const title = req.params.title;
+  
+  try {
+    const url = `http://localhost:${process.env.PORT || 5000}/title/${title}`;
+    
+    // Using axios with async-await
+    const response = await axios.get(url);
+    res.send(JSON.stringify(response.data, null, 4));
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      res.status(404).json({ message: "No books found with this title" });
+    } else {
+      res.status(500).json({ 
+        message: "Error fetching books by title via axios", 
+        error: error.message 
+      });
+    }
+  }
+});
+
 //  Get book review
 public_users.get("/review/:isbn", function (req, res) {
   // Get the ISBN from request parameters
