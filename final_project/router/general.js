@@ -166,6 +166,122 @@ public_users.get("/author/:author", function (req, res) {
   }
 });
 
+// Task 12 - Get book details by Author using Promise callbacks
+public_users.get("/author-promise/:author", function (req, res) {
+  const author = req.params.author;
+  
+  // Create a Promise to fetch books by author
+  const getBooksByAuthorPromise = new Promise((resolve, reject) => {
+    // Simulate async operation
+    setTimeout(() => {
+      const bookKeys = Object.keys(books);
+      let matchingBooks = [];
+
+      // Find books by the specified author
+      bookKeys.forEach((key) => {
+        if (books[key].author.toLowerCase() === author.toLowerCase()) {
+          matchingBooks.push(books[key]);
+        }
+      });
+
+      if (matchingBooks.length > 0) {
+        resolve(matchingBooks);
+      } else {
+        reject(new Error("No books found by this author"));
+      }
+    }, 100);
+  });
+
+  // Using Promise callbacks (.then() and .catch())
+  getBooksByAuthorPromise
+    .then((booksData) => {
+      res.send(JSON.stringify(booksData, null, 4));
+    })
+    .catch((error) => {
+      res.status(404).json({ message: error.message });
+    });
+});
+
+// Task 12 - Get book details by Author using async-await
+public_users.get("/author-async/:author", async function (req, res) {
+  const author = req.params.author;
+  
+  try {
+    // Function that returns a Promise
+    const getBooksByAuthorAsync = (author) => {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          const bookKeys = Object.keys(books);
+          let matchingBooks = [];
+
+          // Find books by the specified author
+          bookKeys.forEach((key) => {
+            if (books[key].author.toLowerCase() === author.toLowerCase()) {
+              matchingBooks.push(books[key]);
+            }
+          });
+
+          if (matchingBooks.length > 0) {
+            resolve(matchingBooks);
+          } else {
+            reject(new Error("No books found by this author"));
+          }
+        }, 100);
+      });
+    };
+
+    // Using async-await
+    const booksData = await getBooksByAuthorAsync(author);
+    res.send(JSON.stringify(booksData, null, 4));
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+});
+
+// Task 12 - Get book details by Author using axios with Promise callbacks
+public_users.get("/author-axios-promise/:author", function (req, res) {
+  const author = req.params.author;
+  const url = `http://localhost:${process.env.PORT || 5000}/author/${author}`;
+  
+  // Using axios with Promise callbacks
+  axios.get(url)
+    .then((response) => {
+      res.send(JSON.stringify(response.data, null, 4));
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 404) {
+        res.status(404).json({ message: "No books found by this author" });
+      } else {
+        res.status(500).json({ 
+          message: "Error fetching books by author via axios", 
+          error: error.message 
+        });
+      }
+    });
+});
+
+// Task 12 - Get book details by Author using axios with async-await
+public_users.get("/author-axios-async/:author", async function (req, res) {
+  const author = req.params.author;
+  
+  try {
+    const url = `http://localhost:${process.env.PORT || 5000}/author/${author}`;
+    
+    // Using axios with async-await
+    const response = await axios.get(url);
+    res.send(JSON.stringify(response.data, null, 4));
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      res.status(404).json({ message: "No books found by this author" });
+    } else {
+      res.status(500).json({ 
+        message: "Error fetching books by author via axios", 
+        error: error.message 
+      });
+    }
+  }
+});
+
 // Get all books based on title
 public_users.get("/title/:title", function (req, res) {
   // Get the title from request parameters
